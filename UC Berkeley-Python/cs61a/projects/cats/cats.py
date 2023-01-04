@@ -31,6 +31,14 @@ def pick(paragraphs, select, k):
     """
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
+    l = len(paragraphs)
+    cnt = 0
+    for i in range(l):
+        if select(paragraphs[i]): 
+            cnt += 1
+        if cnt - k == 1:
+            return paragraphs[i]
+    return ""
     # END PROBLEM 1
 
 
@@ -50,6 +58,14 @@ def about(topic):
     assert all([lower(x) == x for x in topic]), 'topics should be lowercase.'
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    def fun(paragraph):
+        paragraphs = split(remove_punctuation(paragraph))
+        for i in topic:
+            for j in paragraphs:
+                if lower(i) == lower(j):
+                    return True
+        return False
+    return fun
     # END PROBLEM 2
 
 
@@ -80,6 +96,19 @@ def accuracy(typed, reference):
     reference_words = split(reference)
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    l = len(typed_words)
+    lc = 0
+    for i in range(l):
+        if i >= len(reference_words):
+            break
+        if typed_words[i] == reference_words[i]:
+            lc += 1
+    if l == 0 and len(reference_words) == 0: 
+        return 100.0
+    elif l == 0:
+        return 0.0
+    else:
+        return lc*100/l
     # END PROBLEM 3
 
 
@@ -98,6 +127,7 @@ def wpm(typed, elapsed):
     assert elapsed > 0, 'Elapsed time must be positive'
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    return len(typed)*12/elapsed
     # END PROBLEM 4
 
 
@@ -125,6 +155,18 @@ def autocorrect(typed_word, word_list, diff_function, limit):
     """
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    ans_number = diff_function(typed_word, word_list[0],limit)
+    ans_string = word_list[0]
+    for i in word_list:
+        if i == typed_word:
+            return typed_word
+        temp = diff_function(typed_word,i,limit)
+        if temp < ans_number:
+            ans_number = temp
+            ans_string = i
+    if ans_number > limit:
+        return typed_word
+    return ans_string
     # END PROBLEM 5
 
 
@@ -151,7 +193,18 @@ def feline_fixes(typed, reference, limit):
     5
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+    if limit < 0:
+        return 0
+    if len(typed) == 0 or len(reference) == 0:
+        return max(len(typed), len(reference))
+    else:
+        new_typed = typed[1:len(typed)]
+        new_reference = reference[1:len(reference)]
+        if typed[0] == reference[0]:
+            return feline_fixes(new_typed, new_reference,limit)
+        else:
+            return feline_fixes(new_typed, new_reference,limit-1) + 1
+            
     # END PROBLEM 6
 
 
@@ -175,6 +228,21 @@ def hidden_kittens(typed, reference, limit):
     """
     # BEGIN PROBLEM 7
     "*** YOUR CODE HERE ***"
+    cnt = 0
+    for i in range(len(typed)):
+        if reference[0] == typed[i]:
+            if len(reference) == 1:
+                cnt += 1
+            elif i+1 < len(typed):
+                delta = hidden_kittens(typed[i+1:len(typed)],reference[1:len(reference)],limit)
+                if delta == limit + 2 or delta < limit:
+                    cnt += delta
+        if cnt > limit: 
+            return limit+2
+    if cnt == 0:
+        return limit+1
+    else:
+        return cnt
     # END PROBLEM 7
 
 
@@ -217,6 +285,18 @@ def report_progress(typed, prompt, user_id, upload):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    cnt = 0
+    for i in range(len(typed)):
+        if i >= len(prompt):
+            break
+        if typed[i] == prompt[i]:
+            cnt += 1
+        else:
+            break
+    information={'id':user_id, 'progress':cnt/len(prompt)}
+    # print(information)
+    upload(information)
+    return information['progress']
     # END PROBLEM 8
 
 
@@ -227,8 +307,8 @@ def time_per_word(words, times_per_player):
     Arguments:
         words: a list of words, in the order they are typed.
         times_per_player: A list of lists of timestamps including the time
-                          the player started typing, followed by the time
-                          the player finished typing each word.
+                        the player started typing, followed by the time
+                        the player finished typing each word.
 
     >>> p = [[75, 81, 84, 90, 92], [19, 29, 35, 36, 38]]
     >>> match = time_per_word(['collar', 'plush', 'blush', 'repute'], p)
@@ -239,6 +319,14 @@ def time_per_word(words, times_per_player):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    times = []
+    for player in times_per_player:
+        temp = []
+        for t in range(len(player)):
+            if t > 0:
+                temp.append(player[t]-player[t-1])
+        times.append(temp)
+    return match(words,times)
     # END PROBLEM 9
 
 
@@ -261,6 +349,18 @@ def fastest_words(match):
     word_indices = range(len(match["words"]))    # contains an *index* for each word
     # BEGIN PROBLEM 10
     "*** YOUR CODE HERE ***"
+    ans = []
+    for i in player_indices:
+        ans.append([])
+    for i in word_indices:
+        min_id = 0
+        min_num = 9999
+        for j in player_indices:
+            if match['times'][j][i] < min_num:
+                min_num = match['times'][j][i]
+                min_id = j
+        ans[min_id].append(match['words'][i])
+    return ans
     # END PROBLEM 10
 
 
